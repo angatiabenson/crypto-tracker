@@ -1,7 +1,5 @@
 package com.plcoding.cryptotracker.crypto.presentation.coin_list
 
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,7 +34,8 @@ fun CoinListScreen(
     modifier: Modifier = Modifier,
     state: CoinListState,
     events: Flow<CoinListEvent>,
-    onRefreshAction: () -> Unit
+    onRefreshAction: () -> Unit,
+    onAction: (CoinListAction) -> Unit
 ) {
     var showError by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
@@ -50,21 +49,19 @@ fun CoinListScreen(
 
     if (state.isLoading) {
         Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
         }
     } else {
         LazyColumn(
-            modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(state.coins) { coinUi ->
                 CoinListItem(
-                    coinUi = coinUi,
-                    onItemClick = {},
-                    modifier = Modifier.fillMaxWidth()
+                    coinUi = coinUi, onItemClick = {
+                        onAction(CoinListAction.OnCoinClick(coinUi))
+                    }, modifier = Modifier.fillMaxWidth()
                 )
                 HorizontalDivider()
             }
@@ -74,18 +71,12 @@ fun CoinListScreen(
     // Show error alert if error exists
     showError?.let { errorMessage ->
         Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
-            ErrorAlert(
-                message = errorMessage,
-                onRefresh = {
-                    showError = null
-                    onRefreshAction()
-                }
-            )
+            ErrorAlert(message = errorMessage, onRefresh = {
+                showError = null
+                onRefreshAction()
+            })
         }
     }
-
-
 }
