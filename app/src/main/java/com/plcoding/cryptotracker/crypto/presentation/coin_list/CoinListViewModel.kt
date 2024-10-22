@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.plcoding.cryptotracker.core.domain.util.onError
 import com.plcoding.cryptotracker.core.domain.util.onSuccess
 import com.plcoding.cryptotracker.crypto.domain.CoinDataSource
+import com.plcoding.cryptotracker.crypto.presentation.models.CoinUi
 import com.plcoding.cryptotracker.crypto.presentation.models.toCoinUi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.ZonedDateTime
 
 /**
  * @Author: Angatia Benson
@@ -40,16 +42,36 @@ class CoinListViewModel(
     fun onAction(action: CoinListAction) {
         when (action) {
             is CoinListAction.OnCoinClick -> {
-                _state.update {
-                    it.copy(
-                        selectedCoin = action.coin
-                    )
-                }
+                selectCoin(coin = action.coin)
             }
-            is CoinListAction.OnRefresh ->{
+
+            is CoinListAction.OnRefresh -> {
                 loadCoins()
             }
         }
+    }
+
+    private fun selectCoin(coin: CoinUi) {
+        _state.update {
+            it.copy(
+                selectedCoin = coin
+            )
+        }
+        viewModelScope.launch {
+            coinDataSource
+                .getCoinHistory(
+                    coinId = coin.id,
+                    start = ZonedDateTime.now().minusDays(5),
+                    end = ZonedDateTime.now()
+                )
+                .onSuccess { history ->
+                    println(history)
+                }
+                .onError { error ->
+                    _events.send(CoinListEvent.Error(error))
+                }
+        }
+
     }
 
     private fun loadCoins() {
@@ -70,7 +92,7 @@ class CoinListViewModel(
                         )
                     }
                 }
-                .onError { error->
+                .onError { error ->
                     _state.update {
                         it.copy(
                             isLoading = false
