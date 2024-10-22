@@ -34,7 +34,6 @@ fun CoinListScreen(
     modifier: Modifier = Modifier,
     state: CoinListState,
     events: Flow<CoinListEvent>,
-    onRefreshAction: () -> Unit,
     onAction: (CoinListAction) -> Unit
 ) {
     var showError by remember { mutableStateOf<String?>(null) }
@@ -75,7 +74,7 @@ fun CoinListScreen(
         ) {
             ErrorAlert(message = errorMessage, onRefresh = {
                 showError = null
-                onRefreshAction()
+                onAction(CoinListAction.OnRefresh)
             })
         }
     }

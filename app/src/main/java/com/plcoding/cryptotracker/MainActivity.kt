@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.plcoding.cryptotracker.core.navigation.AdaptiveCoinListDetailPane
 import com.plcoding.cryptotracker.crypto.presentation.coin_detail.CoinDetailScreen
 import com.plcoding.cryptotracker.crypto.presentation.coin_list.CoinListAction
 import com.plcoding.cryptotracker.crypto.presentation.coin_list.CoinListScreen
@@ -28,28 +29,9 @@ class MainActivity : ComponentActivity() {
                     topBar = { MyAppTopBar() },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    val viewModel = koinViewModel<CoinListViewModel>()
-                    val state by viewModel.state.collectAsStateWithLifecycle()
-                    when {
-                        state.selectedCoin != null -> {
-                            CoinDetailScreen(
-                                state = state,
-                                modifier = Modifier.padding(innerPadding),
-                            )
-                        }
-
-                        else -> {
-                            CoinListScreen(
-                                state = state,
-                                modifier = Modifier.padding(innerPadding),
-                                events = viewModel.events,
-                                onRefreshAction = {
-                                    viewModel.onAction(CoinListAction.OnRefresh)
-                                },
-                                onAction = viewModel::onAction
-                            )
-                        }
-                    }
+                    AdaptiveCoinListDetailPane(
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 }
             }
         }
